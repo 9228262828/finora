@@ -2,7 +2,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-void main() => runApp(const FinoraApp());
+void main() {
+  runApp(const FinoraApp());
+}
 
 class FinoraApp extends StatefulWidget {
   const FinoraApp({super.key});
@@ -14,7 +16,20 @@ class FinoraApp extends StatefulWidget {
 class _FinoraAppState extends State<FinoraApp> {
   bool darkMode = false;
 
-  void updateTheme(bool value) {
+  @override
+  void initState() {
+    super.initState();
+    _loadTheme();
+  }
+
+  Future<void> _loadTheme() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() => darkMode = prefs.getBool('darkMode') ?? false);
+  }
+
+  Future<void> updateTheme(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('darkMode', value);
     setState(() => darkMode = value);
   }
 
@@ -26,8 +41,8 @@ class _FinoraAppState extends State<FinoraApp> {
       themeMode: darkMode ? ThemeMode.dark : ThemeMode.light,
       theme: ThemeData(
         useMaterial3: true,
-        colorSchemeSeed: const Color(0xFF10B981),
-        scaffoldBackgroundColor: const Color(0xFFF8FAFC),
+        colorSchemeSeed: const Color(0xFF047857),
+        scaffoldBackgroundColor: const Color(0xFFF7F5EF),
       ),
       darkTheme: ThemeData(
         useMaterial3: true,
@@ -64,11 +79,11 @@ class TransactionItem {
 
   factory TransactionItem.fromJson(Map<String, dynamic> json) {
     return TransactionItem(
-      title: json['title'],
+      title: json['title'] ?? '',
       amount: (json['amount'] as num).toDouble(),
-      type: json['type'],
-      category: json['category'],
-      date: json['date'],
+      type: json['type'] ?? 'expense',
+      category: json['category'] ?? 'General',
+      date: json['date'] ?? '',
     );
   }
 }
@@ -81,46 +96,60 @@ class SplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF062A2D),
+      backgroundColor: const Color(0xFF052E2B),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(28),
+          padding: const EdgeInsets.all(26),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const Spacer(),
               Container(
                 width: 120,
                 height: 120,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(30),
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF10B981), Color(0xFF0EA5E9)],
-                  ),
-                ),
-                child: const Icon(Icons.account_balance_wallet_rounded,
-                    color: Colors.white, size: 66),
+                  color: const Color(0xFFFFD166),
+                  borderRadius: BorderRadius.circular(50),
+                ),child:
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(25),
+                    child: Image(
+                      image: const AssetImage("assets/logo.png"),
+                      width: 50,
+                    ),
+                  )
               ),
-              const SizedBox(height: 26),
+              const SizedBox(height: 34),
               const Text(
                 'Finora',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 42,
+                  fontSize: 46,
                   fontWeight: FontWeight.w900,
+                  letterSpacing: -1,
                 ),
               ),
+              const SizedBox(height: 10),
               Text(
-                'Track. Save. Grow.',
+                'Simple money tracking\nfor everyday life.',
                 style: TextStyle(
                   color: Colors.white.withOpacity(.75),
-                  fontSize: 16,
+                  fontSize: 18,
+                  height: 1.4,
                 ),
               ),
               const Spacer(),
               SizedBox(
                 width: double.infinity,
-                height: 56,
+                height: 58,
                 child: FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFFFFD166),
+                    foregroundColor: const Color(0xFF052E2B),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                  ),
                   onPressed: () {
                     Navigator.pushReplacement(
                       context,
@@ -130,7 +159,10 @@ class SplashScreen extends StatelessWidget {
                       ),
                     );
                   },
-                  child: const Text('Get Started'),
+                  child: const Text(
+                    'Start Tracking',
+                    style: TextStyle(fontWeight: FontWeight.w800),
+                  ),
                 ),
               ),
             ],
@@ -162,6 +194,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> loadItems() async {
     final prefs = await SharedPreferences.getInstance();
     final data = prefs.getString('transactions');
+
     if (data != null) {
       final list = jsonDecode(data) as List;
       setState(() {
@@ -180,15 +213,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   double get income => items
       .where((e) => e.type == 'income')
-      .fold(0, (sum, e) => sum + e.amount);
+      .fold(0.0, (sum, e) => sum + e.amount);
 
   double get expense => items
       .where((e) => e.type == 'expense')
-      .fold(0, (sum, e) => sum + e.amount);
+      .fold(0.0, (sum, e) => sum + e.amount);
 
   double get balance => income - expense;
 
-  Future<void> addItem() async {
+  Future<void> addTransaction() async {
     final result = await Navigator.push<TransactionItem>(
       context,
       MaterialPageRoute(builder: (_) => const AddTransactionScreen()),
@@ -200,160 +233,240 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void deleteItem(int index) {
+  void deleteTransaction(int index) {
     setState(() => items.removeAt(index));
     saveItems();
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Finora',
-            style: TextStyle(fontWeight: FontWeight.w900)),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_rounded),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) =>
-                    SettingsScreen(onThemeChanged: widget.onThemeChanged),
-              ),
-            ),
-          )
-        ],
+      floatingActionButton: FloatingActionButton(
+        onPressed: addTransaction,
+        child: const Icon(Icons.add_rounded),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: addItem,
-        icon: const Icon(Icons.add_rounded),
-        label: const Text('Add'),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(28),
-              gradient: const LinearGradient(
-                colors: [Color(0xFF10B981), Color(0xFF0F766E)],
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(20),
+          children: [
+            Row(
               children: [
-                const Text('Current Balance',
-                    style: TextStyle(color: Colors.white70)),
-                const SizedBox(height: 8),
-                Text(
-                  '\$${balance.toStringAsFixed(2)}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 36,
-                    fontWeight: FontWeight.w900,
+                const Expanded(
+                  child: Text(
+                    'Overview',
+                    style: TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 18),
-                Row(
-                  children: [
-                    Expanded(child: _MiniStat('Income', income, Icons.arrow_downward)),
-                    Expanded(child: _MiniStat('Expense', expense, Icons.arrow_upward)),
-                  ],
-                )
+                IconButton(
+                  icon: const Icon(Icons.tune_rounded),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => SettingsScreen(
+                          onThemeChanged: widget.onThemeChanged,
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ],
             ),
-          ),
-          const SizedBox(height: 28),
-          const Text('Transactions',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900)),
-          const SizedBox(height: 12),
-          if (items.isEmpty)
-            const Padding(
-              padding: EdgeInsets.only(top: 40),
-              child: Center(child: Text('No transactions yet')),
+            const SizedBox(height: 20),
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF064E3B) : const Color(0xFF052E2B),
+                borderRadius: BorderRadius.circular(32),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Total Balance',
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '\$${balance.toStringAsFixed(2)}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 38,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: MoneyBox(
+                          title: 'Income',
+                          amount: income,
+                          icon: Icons.south_west_rounded,
+                          color: const Color(0xFF10B981),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: MoneyBox(
+                          title: 'Expense',
+                          amount: expense,
+                          icon: Icons.north_east_rounded,
+                          color: const Color(0xFFEF4444),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ...items.asMap().entries.map((entry) {
-            final index = entry.key;
-            final item = entry.value;
-            final isIncome = item.type == 'income';
-
-            return Dismissible(
-              key: ValueKey('${item.title}$index'),
-              onDismissed: (_) => deleteItem(index),
-              child: Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.all(16),
+            const SizedBox(height: 28),
+            const Text(
+              'Recent Transactions',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
+            ),
+            const SizedBox(height: 14),
+            if (items.isEmpty)
+              Container(
+                padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
                   color: Theme.of(context).cardColor,
-                  borderRadius: BorderRadius.circular(22),
+                  borderRadius: BorderRadius.circular(24),
                 ),
-                child: Row(
+                child: const Column(
                   children: [
-                    CircleAvatar(
-                      backgroundColor: isIncome
-                          ? Colors.green.withOpacity(.12)
-                          : Colors.red.withOpacity(.12),
-                      child: Icon(
-                        isIncome
-                            ? Icons.south_west_rounded
-                            : Icons.north_east_rounded,
-                        color: isIncome ? Colors.green : Colors.red,
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(item.title,
-                              style:
-                              const TextStyle(fontWeight: FontWeight.w800)),
-                          Text('${item.category} • ${item.date}'),
-                        ],
-                      ),
-                    ),
+                    Icon(Icons.receipt_long_rounded, size: 44),
+                    SizedBox(height: 12),
                     Text(
-                      '${isIncome ? '+' : '-'}\$${item.amount.toStringAsFixed(2)}',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w900,
-                        color: isIncome ? Colors.green : Colors.red,
-                      ),
-                    )
+                      'No transactions yet',
+                      style: TextStyle(fontWeight: FontWeight.w800),
+                    ),
+                    SizedBox(height: 6),
+                    Text(
+                      'Tap + to add your first income or expense.',
+                      textAlign: TextAlign.center,
+                    ),
                   ],
                 ),
               ),
-            );
-          }),
-        ],
+            ...items.asMap().entries.map((entry) {
+              final index = entry.key;
+              final item = entry.value;
+              final isIncome = item.type == 'income';
+
+              return Dismissible(
+                key: ValueKey('${item.title}-${item.date}-$index'),
+                direction: DismissDirection.endToStart,
+                background: Container(
+                  alignment: Alignment.centerRight,
+                  padding: const EdgeInsets.only(right: 20),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Icon(Icons.delete_rounded, color: Colors.white),
+                ),
+                onDismissed: (_) => deleteTransaction(index),
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).cardColor,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 46,
+                        height: 46,
+                        decoration: BoxDecoration(
+                          color: isIncome
+                              ? Colors.green.withOpacity(.12)
+                              : Colors.red.withOpacity(.12),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Icon(
+                          isIncome
+                              ? Icons.arrow_downward_rounded
+                              : Icons.arrow_upward_rounded,
+                          color: isIncome ? Colors.green : Colors.red,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(item.title,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w800)),
+                            const SizedBox(height: 4),
+                            Text('${item.category} • ${item.date}'),
+                          ],
+                        ),
+                      ),
+                      Text(
+                        '${isIncome ? '+' : '-'}\$${item.amount.toStringAsFixed(2)}',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w900,
+                          color: isIncome ? Colors.green : Colors.red,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _MiniStat extends StatelessWidget {
+class MoneyBox extends StatelessWidget {
   final String title;
-  final double value;
+  final double amount;
   final IconData icon;
+  final Color color;
 
-  const _MiniStat(this.title, this.value, this.icon);
+  const MoneyBox({
+    super.key,
+    required this.title,
+    required this.amount,
+    required this.icon,
+    required this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, color: Colors.white),
-        const SizedBox(width: 8),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: const TextStyle(color: Colors.white70)),
-            Text('\$${value.toStringAsFixed(0)}',
-                style: const TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.w900)),
-          ],
-        )
-      ],
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(.10),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: color),
+          const SizedBox(height: 8),
+          Text(title, style: const TextStyle(color: Colors.white70)),
+          const SizedBox(height: 4),
+          Text(
+            '\$${amount.toStringAsFixed(0)}',
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -372,13 +485,20 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   String type = 'expense';
   String category = 'General';
 
-  final categories = ['General', 'Food', 'Transport', 'Shopping', 'Salary'];
+  final categories = [
+    'General',
+    'Food',
+    'Transport',
+    'Shopping',
+    'Bills',
+    'Salary',
+  ];
 
   void save() {
     final title = titleController.text.trim();
     final amount = double.tryParse(amountController.text.trim());
 
-    if (title.isEmpty || amount == null) return;
+    if (title.isEmpty || amount == null || amount <= 0) return;
 
     Navigator.pop(
       context,
@@ -393,28 +513,44 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   }
 
   @override
+  void dispose() {
+    titleController.dispose();
+    amountController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final isExpense = type == 'expense';
+
     return Scaffold(
-      appBar: AppBar(
-        title:
-        const Text('Add Transaction', style: TextStyle(fontWeight: FontWeight.w900)),
-      ),
+      appBar: AppBar(title: const Text('New Transaction')),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          SegmentedButton<String>(
-            segments: const [
-              ButtonSegment(value: 'expense', label: Text('Expense')),
-              ButtonSegment(value: 'income', label: Text('Income')),
-            ],
-            selected: {type},
-            onSelectionChanged: (v) => setState(() => type = v.first),
+          Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: isExpense
+                  ? Colors.red.withOpacity(.08)
+                  : Colors.green.withOpacity(.08),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: SegmentedButton<String>(
+              selected: {type},
+              onSelectionChanged: (v) => setState(() => type = v.first),
+              segments: const [
+                ButtonSegment(value: 'expense', label: Text('Expense')),
+                ButtonSegment(value: 'income', label: Text('Income')),
+              ],
+            ),
           ),
           const SizedBox(height: 20),
           TextField(
             controller: titleController,
             decoration: const InputDecoration(
-              labelText: 'Title',
+              labelText: 'Transaction title',
+              prefixIcon: Icon(Icons.edit_note_rounded),
               filled: true,
             ),
           ),
@@ -424,29 +560,31 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             keyboardType: TextInputType.number,
             decoration: const InputDecoration(
               labelText: 'Amount',
+              prefixIcon: Icon(Icons.attach_money_rounded),
               filled: true,
             ),
           ),
           const SizedBox(height: 14),
           DropdownButtonFormField<String>(
             value: category,
+            decoration: const InputDecoration(
+              labelText: 'Category',
+              prefixIcon: Icon(Icons.category_rounded),
+              filled: true,
+            ),
             items: categories
                 .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                 .toList(),
             onChanged: (v) => setState(() => category = v ?? 'General'),
-            decoration: const InputDecoration(
-              labelText: 'Category',
-              filled: true,
-            ),
           ),
           const SizedBox(height: 30),
           SizedBox(
             height: 56,
             child: FilledButton(
               onPressed: save,
-              child: const Text('Save'),
+              child: const Text('Save Transaction'),
             ),
-          )
+          ),
         ],
       ),
     );
@@ -474,7 +612,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> loadTheme() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() => darkMode = prefs.getBool('darkMode') ?? false);
-    widget.onThemeChanged(darkMode);
   }
 
   Future<void> changeTheme(bool value) async {
@@ -487,20 +624,53 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar:
-      AppBar(title: const Text('Settings', style: TextStyle(fontWeight: FontWeight.w900))),
+      appBar: AppBar(
+        title: const Text('Preferences'),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
+          Container(
+            padding: const EdgeInsets.all(22),
+            decoration: BoxDecoration(
+              color: const Color(0xFF052E2B),
+              borderRadius: BorderRadius.circular(28),
+            ),
+            child:  Row(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(25),
+                  child: Image(
+                    image: const AssetImage("assets/logo.png"),
+                    width: 50,
+                  ),
+                ),
+                SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    'Finora\nLocal Expense Tracker',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 18,
+                    ),
+                  ),
+                )
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
           SwitchListTile(
             value: darkMode,
             onChanged: changeTheme,
             title: const Text('Dark Mode'),
             secondary: const Icon(Icons.dark_mode_rounded),
           ),
+          const Divider(),
           ListTile(
             leading: const Icon(Icons.privacy_tip_rounded),
             title: const Text('Privacy Policy'),
+            trailing: const Icon(Icons.chevron_right_rounded),
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen()),
@@ -509,16 +679,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ListTile(
             leading: const Icon(Icons.article_rounded),
             title: const Text('Terms & Conditions'),
+            trailing: const Icon(Icons.chevron_right_rounded),
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const TermsScreen()),
             ),
           ),
-          const SizedBox(height: 24),
-          const Text(
-            'Finora\nVersion 1.0.0\nSimple local expense tracker.',
-            textAlign: TextAlign.center,
-          )
+          const SizedBox(height: 22),
+          const Center(
+            child: Text(
+              'Version 1.0.0',
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
+          ),
         ],
       ),
     );
@@ -533,7 +706,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
     return const TextPage(
       title: 'Privacy Policy',
       text:
-      'Finora stores your income, expense, category, and settings data locally on your device. The app does not require login, does not use a backend server, does not use Firebase, does not show ads, and does not share data with third parties.',
+      'Finora is a simple local expense tracking app. The app stores your transactions, income, expenses, categories, balance data, and settings locally on your device using local storage. Finora does not require account creation, login, backend servers, Firebase, ads, or third-party data sharing. Your financial tracking data remains on your device. You can remove stored data by clearing app data or uninstalling the app.',
     );
   }
 }
@@ -546,7 +719,7 @@ class TermsScreen extends StatelessWidget {
     return const TextPage(
       title: 'Terms & Conditions',
       text:
-      'Finora is provided as a simple personal finance tracking tool. It does not provide financial advice. Users are responsible for their own financial decisions and for keeping their local device data safe.',
+      'By using Finora, you agree that the app is provided as a personal expense tracking tool only. Finora does not provide financial, investment, tax, or legal advice. Users are responsible for entering accurate data and making their own financial decisions. The app is provided as-is without guarantees. Since data is stored locally, users are responsible for protecting their device and backups.',
     );
   }
 }
@@ -555,16 +728,30 @@ class TextPage extends StatelessWidget {
   final String title;
   final String text;
 
-  const TextPage({super.key, required this.title, required this.text});
+  const TextPage({
+    super.key,
+    required this.title,
+    required this.text,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(title)),
       body: ListView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(22),
         children: [
-          Text(text, style: const TextStyle(fontSize: 16, height: 1.6)),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Text(
+              text,
+              style: const TextStyle(fontSize: 16, height: 1.7),
+            ),
+          ),
         ],
       ),
     );
