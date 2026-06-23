@@ -347,10 +347,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 const Expanded(
                   child: Text(
                     'Overview',
-                    style: TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.w900,
-                    ),
+                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.w900),
                   ),
                 ),
                 IconButton(
@@ -373,7 +370,9 @@ class _HomeScreenState extends State<HomeScreen> {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF064E3B) : const Color(0xFF052E2B),
+                color: isDark
+                    ? const Color(0xFF064E3B)
+                    : const Color(0xFF052E2B),
                 borderRadius: BorderRadius.circular(32),
               ),
               child: Column(
@@ -672,7 +671,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       context,
       TransactionItem(
         title: title,
-        amount: amount,
+        amount: amount!,
         type: type,
         category: category,
         date: DateTime.now().toString().substring(0, 10),
@@ -740,9 +739,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           const SizedBox(height: 14),
           TextField(
             controller: amountController,
-            keyboardType: const TextInputType.numberWithOptions(
-              decimal: true,
-            ),
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
             inputFormatters: [
               TextInputFormatter.withFunction((oldValue, newValue) {
                 final text = newValue.text;
@@ -766,7 +763,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           ),
           const SizedBox(height: 14),
           DropdownButtonFormField<String>(
-            value: category,
+            initialValue: category,
             decoration: const InputDecoration(
               labelText: 'Category',
               prefixIcon: Icon(Icons.category_rounded),
@@ -826,9 +823,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Preferences'),
-      ),
+      appBar: AppBar(title: const Text('Preferences')),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
@@ -861,7 +856,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       fontSize: 18,
                     ),
                   ),
-                )
+                ),
               ],
             ),
           ),
@@ -976,11 +971,7 @@ class TextPage extends StatelessWidget {
   final String title;
   final String text;
 
-  const TextPage({
-    super.key,
-    required this.title,
-    required this.text,
-  });
+  const TextPage({super.key, required this.title, required this.text});
 
   @override
   Widget build(BuildContext context) {
