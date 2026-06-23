@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Finora | Simple Money Tracking</title>
+  <meta name="description" content="Finora is a simple local expense tracker for everyday income and spending.">
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #082f2a;
+      --muted: #5f746f;
+      --green: #047857;
+      --mint: #d1fae5;
+      --gold: #ffd166;
+      --paper: #f7f5ef;
+      --card: #ffffff;
+      --line: rgba(8, 47, 42, .12);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(16, 185, 129, .22), transparent 34rem),
+        linear-gradient(180deg, #f7f5ef 0%, #eef8f3 100%);
+      line-height: 1.6;
+    }
+
+    a {
+      color: var(--green);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .shell {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    header {
+      padding: 22px 0;
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.25rem;
+      font-weight: 900;
+      letter-spacing: -.03em;
+    }
+
+    .mark {
+      display: grid;
+      width: 44px;
+      height: 44px;
+      place-items: center;
+      border-radius: 16px;
+      background: var(--gold);
+      box-shadow: 0 12px 28px rgba(4, 120, 87, .18);
+    }
+
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 14px;
+      font-size: .95rem;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 44px;
+      align-items: center;
+      padding: 56px 0 72px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .7);
+      color: var(--green);
+      font-size: .9rem;
+      font-weight: 800;
+    }
+
+    h1 {
+      margin: 18px 0;
+      font-size: clamp(2.5rem, 8vw, 5.8rem);
+      line-height: .92;
+      letter-spacing: -.08em;
+    }
+
+    .lead {
+      max-width: 620px;
+      color: var(--muted);
+      font-size: clamp(1.05rem, 2.6vw, 1.35rem);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 28px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 0 20px;
+      border-radius: 16px;
+      background: var(--ink);
+      color: #fff;
+      box-shadow: 0 16px 34px rgba(8, 47, 42, .22);
+    }
+
+    .button.secondary {
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, .76);
+      color: var(--ink);
+      box-shadow: none;
+    }
+
+    .phone-card {
+      position: relative;
+      overflow: hidden;
+      padding: 22px;
+      border: 1px solid rgba(255, 255, 255, .5);
+      border-radius: 36px;
+      background: #052e2b;
+      color: #fff;
+      box-shadow: 0 28px 80px rgba(8, 47, 42, .28);
+    }
+
+    .balance {
+      padding: 24px;
+      border-radius: 28px;
+      background: linear-gradient(135deg, rgba(255, 255, 255, .16), rgba(255, 255, 255, .06));
+    }
+
+    .balance small {
+      color: rgba(255, 255, 255, .72);
+    }
+
+    .balance strong {
+      display: block;
+      margin-top: 8px;
+      font-size: clamp(2rem, 10vw, 3.1rem);
+      letter-spacing: -.06em;
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin: 16px 0;
+    }
+
+    .mini {
+      padding: 16px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, .1);
+    }
+
+    .transaction {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px;
+      border-radius: 18px;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    .section {
+      padding: 58px 0;
+    }
+
+    .section h2 {
+      margin: 0 0 12px;
+      font-size: clamp(1.8rem, 5vw, 3rem);
+      letter-spacing: -.05em;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 28px;
+    }
+
+    .card {
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background: rgba(255, 255, 255, .76);
+      box-shadow: 0 20px 50px rgba(4, 120, 87, .08);
+    }
+
+    .card h3 {
+      margin: 0 0 8px;
+      font-size: 1.1rem;
+    }
+
+    .card p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    footer {
+      padding: 34px 0 44px;
+      color: var(--muted);
+      border-top: 1px solid var(--line);
+    }
+
+    @media (max-width: 760px) {
+      nav {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .links {
+        justify-content: flex-start;
+      }
+
+      .hero {
+        grid-template-columns: 1fr;
+        padding-top: 32px;
+      }
+
+      .cards {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="shell">
+    <nav aria-label="Main navigation">
+      <a class="brand" href="./index.html" aria-label="Finora home">
+        <span class="mark" aria-hidden="true">F</span>
+        <span>Finora</span>
+      </a>
+      <div class="links">
+        <a href="./privacy-policy.html">Privacy Policy</a>
+        <a href="./terms-conditions.html">Terms & Conditions</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="shell hero">
+      <div>
+        <span class="eyebrow">Local-first finance tracker</span>
+        <h1>Simple money tracking for everyday life.</h1>
+        <p class="lead">
+          Finora helps you record income and expenses, review your balance, and keep everyday spending visible without accounts, ads, or cloud sync.
+        </p>
+        <div class="actions" aria-label="Page links">
+          <a class="button" href="./privacy-policy.html">Read Privacy Policy</a>
+          <a class="button secondary" href="./terms-conditions.html">View Terms</a>
+        </div>
+      </div>
+
+      <div class="phone-card" aria-label="Finora app preview">
+        <div class="balance">
+          <small>Total Balance</small>
+          <strong>$2,840.50</strong>
+        </div>
+        <div class="mini-grid">
+          <div class="mini">
+            <small>Income</small><br>
+            <strong>$3,400</strong>
+          </div>
+          <div class="mini">
+            <small>Expense</small><br>
+            <strong>$559</strong>
+          </div>
+        </div>
+        <div class="transaction">
+          <span>Groceries<br><small>Food</small></span>
+          <strong>-$42.80</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="shell section">
+      <h2>Built for release-ready basics.</h2>
+      <p class="lead">Finora keeps the experience focused on clear tracking, readable summaries, and data that stays on your device.</p>
+      <div class="cards">
+        <article class="card">
+          <h3>Private by design</h3>
+          <p>No login, backend, Firebase, advertisements, or third-party data selling.</p>
+        </article>
+        <article class="card">
+          <h3>Everyday clarity</h3>
+          <p>Track income and expenses with simple categories, dates, and balance totals.</p>
+        </article>
+        <article class="card">
+          <h3>Mobile friendly</h3>
+          <p>Designed to stay readable on small screens and comfortable for quick entries.</p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="shell">
+      <strong>Finora</strong><br>
+      Version 1.0.0+1. Personal finance tracking information only, not financial advice.
+    </div>
+  </footer>
+</body>
+</html>

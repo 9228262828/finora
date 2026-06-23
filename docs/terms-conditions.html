@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Terms & Conditions | Finora</title>
+  <meta name="description" content="Finora terms and conditions for personal expense tracking.">
+  <style>
+    :root {
+      --ink: #082f2a;
+      --muted: #5f746f;
+      --green: #047857;
+      --gold: #ffd166;
+      --paper: #f7f5ef;
+      --card: #ffffff;
+      --line: rgba(8, 47, 42, .12);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(255, 209, 102, .34), transparent 30rem),
+        linear-gradient(180deg, #f7f5ef 0%, #eef8f3 100%);
+      line-height: 1.7;
+    }
+
+    a {
+      color: var(--green);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .shell {
+      width: min(880px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    header {
+      padding: 22px 0;
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.2rem;
+      font-weight: 900;
+      letter-spacing: -.03em;
+    }
+
+    .mark {
+      display: grid;
+      width: 42px;
+      height: 42px;
+      place-items: center;
+      border-radius: 15px;
+      background: var(--gold);
+    }
+
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 14px;
+    }
+
+    .hero {
+      padding: 42px 0 18px;
+    }
+
+    .eyebrow {
+      color: var(--green);
+      font-weight: 900;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      font-size: .78rem;
+    }
+
+    h1 {
+      margin: 10px 0 14px;
+      font-size: clamp(2.2rem, 8vw, 4.8rem);
+      line-height: .95;
+      letter-spacing: -.07em;
+    }
+
+    .lead {
+      color: var(--muted);
+      font-size: 1.12rem;
+    }
+
+    article {
+      margin: 28px 0 64px;
+      padding: clamp(22px, 5vw, 42px);
+      border: 1px solid var(--line);
+      border-radius: 32px;
+      background: rgba(255, 255, 255, .84);
+      box-shadow: 0 22px 55px rgba(4, 120, 87, .08);
+    }
+
+    h2 {
+      margin: 28px 0 8px;
+      font-size: 1.2rem;
+    }
+
+    p {
+      margin: 0 0 16px;
+    }
+
+    footer {
+      padding: 30px 0 42px;
+      color: var(--muted);
+      border-top: 1px solid var(--line);
+    }
+
+    @media (max-width: 640px) {
+      nav {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .links {
+        justify-content: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="shell">
+    <nav aria-label="Main navigation">
+      <a class="brand" href="./index.html" aria-label="Finora home">
+        <span class="mark" aria-hidden="true">F</span>
+        <span>Finora</span>
+      </a>
+      <div class="links">
+        <a href="./index.html">Home</a>
+        <a href="./privacy-policy.html">Privacy Policy</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="shell">
+    <section class="hero">
+      <span class="eyebrow">Terms & Conditions</span>
+      <h1>Simple terms for a simple tracker.</h1>
+      <p class="lead">Finora is a personal expense tracking tool. It is not a bank, advisor, payment product, or tax service.</p>
+    </section>
+
+    <article>
+      <p><strong>Effective date:</strong> June 23, 2026</p>
+
+      <h2>Acceptance of terms</h2>
+      <p>By using Finora, you agree to these terms. If you do not agree, do not use the app.</p>
+
+      <h2>Personal expense tracking only</h2>
+      <p>Finora is provided as a simple tool to help you record and review personal income and expenses. It is not a banking, payment, lending, investment, tax, or accounting service.</p>
+
+      <h2>No financial advice</h2>
+      <p>Finora does not provide financial, investment, tax, legal, or professional advice. You are responsible for your financial decisions and for verifying any information before relying on it.</p>
+
+      <h2>User-entered data</h2>
+      <p>You are responsible for entering accurate transaction information. Finora calculates balances from the information you provide and cannot guarantee that user-entered data is complete or correct.</p>
+
+      <h2>Local storage</h2>
+      <p>Finora stores app data locally on your device. You are responsible for protecting your device, maintaining backups if needed, and understanding that uninstalling the app or clearing app data may delete your stored transactions.</p>
+
+      <h2>No warranties</h2>
+      <p>Finora is provided as-is without warranties or guarantees. To the fullest extent allowed by law, the app developer is not responsible for losses, missed payments, incorrect entries, device issues, or decisions made using the app.</p>
+
+      <h2>Acceptable use</h2>
+      <p>Use Finora only for lawful personal tracking purposes. Do not attempt to misuse, reverse engineer, disrupt, or interfere with the app.</p>
+
+      <h2>Changes to terms</h2>
+      <p>These terms may be updated as Finora changes. Continued use of the app means you accept the current terms.</p>
+    </article>
+  </main>
+
+  <footer>
+    <div class="shell">Finora version 1.0.0+1. Personal finance tracking information only, not financial advice.</div>
+  </footer>
+</body>
+</html>
